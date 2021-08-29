@@ -1,5 +1,5 @@
 # XM
-Extremally fast Finite State Machine pure C implementation 
+Extremely fast Finite State Machine pure C implementation with events subsystem.
 
 ## Features
 * events handling with dynamically allocated events queue
@@ -12,15 +12,94 @@ Extremally fast Finite State Machine pure C implementation
 
 ## Build
 
-Build, test and run DEMO:
+Build, test and run examples:
 
 ```sh
 cmake -B build .
 cd build
 make
-./bin/event1
+./bin/event_1
+./bin/state_1
+```
+
+## API
+
+```c
+typedef int (*xm_event_cb)(struct xm_object *self, xm_event_id_t id, void *arg);
+typedef int (*xm_state_transition_cb)(struct xm_object *self, bool enter);
+typedef int (*xm_state_process_cb)(struct xm_object *self);
+
+xm_status_t xm_init(struct xm_object *self, const struct xm_object_descriptor *desc);
+xm_status_t xm_service(struct xm_object *self);
+xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg);
+xm_status_t xm_state_request(struct xm_object *self, xm_state_id_t id);
 ```
 
 ## Usage
 
-TODO
+Declare states:
+```c
+typedef enum {
+        STATE_1,
+        STATE_2,
+} states_t;
+
+static int state1_transition_cb(struct xm_object *self, bool enter);
+static int state2_process_cb(struct xm_object *self);
+
+static const struct xm_state_descriptor g_states_desc[] = {
+        {
+                .name = "STATE_1",
+                .id = STATE_1,
+                .transition_cb = state1_transition_cb,
+        },
+        {
+                .name = "STATE_2",
+                .id = STATE_2,
+                .process_cb = state2_process_cb,
+        },
+        {0}
+};
+```
+
+Declare events:
+```c
+typedef enum {
+        EVENT_1,
+        EVENT_2,
+} events_t;
+
+static const struct xm_event_descriptor g_events_desc[] = {
+        {
+                .name = "EVENT_1",
+                .id = EVENT_1,
+        },
+        {
+                .name = "EVENT_2",
+                .id = EVENT_2,
+        },
+        {0}
+};
+```
+
+Instance and run:
+```c
+static const struct xm_object_descriptor g_fsm_desc = {
+        .states = g_states_desc,
+        .events = g_events_desc,
+        .init_state_id = STATE_1,
+        .name = "main"
+};
+
+struct xm_object g_fsm;
+
+int main(int argc, char *argv[])
+{
+        (void)argc;
+        (void)argv;
+
+        xm_init(&g_fsm, &g_fsm_desc);
+        while (g_exit_flag == false)
+                xm_service(&g_fsm);
+}
+```
