@@ -27,14 +27,16 @@ SOFTWARE.
 
 xm_status_t xm_event_manager_init(struct xm_object *self)
 {
+        struct xm_event_manager *mgr = &self->event;
+
         XM_ASSERT(self != NULL);
         XM_ASSERT(self->desc->events != NULL);
 
-        self->event.first = NULL;
-        self->event.last = &self->event.first;
-        self->event.max_num = 0;
-        while (self->desc->events[self->event.max_num].name != NULL)
-                self->event.max_num++;
+        mgr->first = NULL;
+        mgr->last = &mgr->first;
+        mgr->max_num = 0;
+        while (self->desc->events[mgr->max_num].name != NULL)
+                mgr->max_num++;
         
         return XM_STATUS_OK;
 }
@@ -42,15 +44,16 @@ xm_status_t xm_event_manager_init(struct xm_object *self)
 xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_event_manager *mgr = &self->event;
 
         XM_ASSERT(self != NULL);
 
-        if (id >= self->event.max_num) {
+        if (id >= mgr->max_num) {
                 XM_LOG_E("unsupported event: %d", id);
                 ret = XM_STATUS_ERROR_UNSUPPORTED_EVENT;
                 goto _xm_event_trigger_return;
         }
-        
+
         struct xm_event *event = XM_MALLOC(sizeof(struct xm_event));
         if (event == NULL) {
                 XM_LOG_E("memory allocation error");
@@ -58,13 +61,15 @@ xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg
                 goto _xm_event_trigger_return;
         }
 
+        const struct xm_state_descriptor *state = self->state.current;
+
         event->id = id;
         event->arg = arg;
-        event->state = self->state.current;
+        event->state_id = (state != NULL) ? state->id : XM_STATE_NO_STATE;
         event->next = NULL;
 
-        *self->event.last = event;
-        self->event.last = &event->next;
+        *mgr->last = event;
+        mgr->last = &event->next;
 
         XM_LOG_I("event triggered: [%s]", self->desc->events[id].name);
 
@@ -75,31 +80,34 @@ _xm_event_trigger_return:
 xm_status_t xm_event_process(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_event_manager *mgr = &self->event;
 
         XM_ASSERT(self != NULL);
 
-        struct xm_event *event = self->event.first;
+        struct xm_event *event = mgr->first;
 
         if (event == NULL) {
                 ret = XM_STATUS_ERROR_NO_PENDING_EVENT;
                 goto _xm_event_process_return;
         }
-        
-        if (event->state == NULL) {
+
+        if (event->state_id < 0) {
                 XM_LOG_E("no state to process event");
                 ret = XM_STATUS_ERROR_NO_STATE_TO_PROCESS_EVENT;
                 goto _xm_event_process_end;
         }
-        if (event->state->event_cb == NULL)
+        
+        const struct xm_state_descriptor *state = &self->desc->states[event->state_id];
+        if (state->event_cb == NULL)
                 goto _xm_event_process_end;
         
-        int busy = event->state->event_cb(self, event->id, event->arg);
+        int busy = state->event_cb(self, event->id, event->arg);
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
         
 _xm_event_process_end:
-        self->event.first = event->next;
-        if (self->event.first == NULL)
-                self->event.last = &self->event.first;
+        mgr->first = event->next;
+        if (mgr->first == NULL)
+                mgr->last = &mgr->first;
 
         XM_LOG_I("event processed: [%s]", self->desc->events[event->id].name);
         XM_FREE(event);

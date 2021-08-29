@@ -28,17 +28,18 @@ SOFTWARE.
 xm_status_t xm_state_manager_init(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_state_manager *mgr = &self->state;
 
         XM_ASSERT(self != NULL);
         XM_ASSERT(self->desc->states != NULL);
 
-        self->state.current = NULL;
-        self->state.max_num = 0;
-        self->state.request_id = XM_STATE_NO_STATE;
-        while (self->desc->states[self->state.max_num].name != NULL)
-                self->state.max_num++;
+        mgr->current = NULL;
+        mgr->request_id = XM_STATE_NO_STATE;
+        mgr->max_num = 0;
+        while (self->desc->states[mgr->max_num].name != NULL)
+                mgr->max_num++;
 
-        if (self->state.max_num == 0) {
+        if (mgr->max_num == 0) {
                 XM_LOG_E("empty states table");
                 ret = XM_STATUS_ERROR_EMPTY_STATES_TABLE;
                 goto _xm_state_manager_init_return;
@@ -53,18 +54,19 @@ _xm_state_manager_init_return:
 xm_status_t xm_state_request(struct xm_object *self, xm_state_id_t id)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_state_manager *mgr = &self->state;
 
         XM_ASSERT(self != NULL);
         XM_ASSERT(id >= 0);
 
-        if (id >= self->state.max_num) {
+        if (id >= mgr->max_num) {
                 XM_LOG_E("unsupported state: %d", id);
                 ret = XM_STATUS_ERROR_UNSUPPORTED_STATE;
                 goto _xm_state_request_return;
         }
 
-        self->state.request_id = id;
-        XM_LOG_I("request state: <%s>", self->desc->states[self->state.request_id].name);
+        mgr->request_id = id;
+        XM_LOG_I("request state: <%s>", self->desc->states[mgr->request_id].name);
 
 _xm_state_request_return:
         return ret;
@@ -73,57 +75,63 @@ _xm_state_request_return:
 xm_status_t xm_state_transition(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_state_manager *mgr = &self->state;
+        const struct xm_state_descriptor *current;
         
         XM_ASSERT(self != NULL);
 
-        if (self->state.request_id < 0) {
+        if (mgr->request_id < 0) {
                 ret = XM_STATUS_ERROR_NO_PENDING_TRANSITION;
                 goto _xm_state_transition_return;
         }
 
-        if (self->state.current == NULL) {
+        current = mgr->current;
+        if (current == NULL) {
                 XM_LOG_I("initial state");
                 goto _xm_state_transition_enter;
         }
 
-        if (self->state.current->id == self->state.request_id) {
-                XM_LOG_E("already active: <%s>", self->state.current->name);
+        if (current->id == mgr->request_id) {
+                XM_LOG_E("already active: <%s>", current->name);
                 ret = XM_STATUS_ERROR_STATE_ALREADY_ACTIVE;
                 goto _xm_state_transition_return;
         }
-        XM_LOG_I("exit: <%s>", self->state.current->name);
+        XM_LOG_I("exit: <%s>", current->name);
         int busy = 0;
-        if (self->state.current->transition_cb != NULL)
-                busy = self->state.current->transition_cb(self, false);
+        if (current->transition_cb != NULL)
+                busy = current->transition_cb(self, false);
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_transition_enter:
 
-        self->state.current = &self->desc->states[self->state.request_id];
-        XM_LOG_I("enter: <%s>", self->state.current->name);
-        if (self->state.current->transition_cb != NULL)
-                self->state.current->transition_cb(self, true);
+        mgr->current = &self->desc->states[mgr->request_id];
+        current = mgr->current;
+        XM_LOG_I("enter: <%s>", current->name);
+        if (current->transition_cb != NULL)
+                current->transition_cb(self, true);
 
 _xm_state_transition_return:
-        self->state.request_id = XM_STATE_NO_STATE;
+        mgr->request_id = XM_STATE_NO_STATE;
         return ret;
 }
 
 xm_status_t xm_state_process(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
+        struct xm_state_manager *mgr = &self->state;
+        const struct xm_state_descriptor *current = mgr->current;
         
         XM_ASSERT(self != NULL);
 
-        if (self->state.current == NULL) {
+        if (current == NULL) {
                 XM_LOG_E("no active state");
                 ret = XM_STATUS_ERROR_NO_ACTIVE_STATE;
                 goto _xm_state_process_return;
         }
 
         int busy = 0;
-        if (self->state.current->process_cb != NULL)
-                busy = self->state.current->process_cb(self);
+        if (current->process_cb != NULL)
+                busy = current->process_cb(self);
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_process_return:

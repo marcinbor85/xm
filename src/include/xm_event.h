@@ -33,8 +33,8 @@ extern "C" {
 
 struct xm_event {
         xm_event_id_t id;
+        xm_state_id_t state_id;
         void *arg;
-        struct xm_state_descriptor const *state;
         struct xm_event *next;
 };
 
