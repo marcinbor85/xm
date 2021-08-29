@@ -35,7 +35,7 @@ struct xm_state_descriptor {
         const char *name;
         xm_state_id_t id;
         
-        xm_event_cb event_cb;
+        xm_state_event_cb event_cb;
         xm_state_transition_cb transition_cb;
         xm_state_process_cb process_cb;
 };
