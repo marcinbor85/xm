@@ -48,6 +48,10 @@ struct xm_event_manager;
 struct xm_state_descriptor;
 struct xm_state_manager;
 
+typedef int (*xm_event_cb)(struct xm_object *self, xm_event_id_t id, void *arg);
+typedef int (*xm_state_transition_cb)(struct xm_object *self, bool enter);
+typedef int (*xm_state_process_cb)(struct xm_object *self);
+
 typedef enum {
     XM_STATUS_OK,
     XM_STATUS_ERROR_MEMORY_ALLOCATION,

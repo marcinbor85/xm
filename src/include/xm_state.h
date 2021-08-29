@@ -35,9 +35,9 @@ struct xm_state_descriptor {
         const char *name;
         xm_state_id_t id;
         
-        int (*event_cb)(struct xm_object *self, xm_event_id_t id, void *arg);
-        int (*transition_cb)(struct xm_object *self, bool enter);
-        int (*process_cb)(struct xm_object *self);
+        xm_event_cb event_cb;
+        xm_state_transition_cb transition_cb;
+        xm_state_process_cb process_cb;
 };
 
 struct xm_state_manager {

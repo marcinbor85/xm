@@ -16,7 +16,6 @@ typedef enum {
         EVENT_2,
 } events_t;
 
-
 static int state1_event_cb(struct xm_object *self, xm_event_id_t id, void *arg);
 static int state1_transition_cb(struct xm_object *self, bool enter);
 
