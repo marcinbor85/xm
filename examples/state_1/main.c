@@ -35,9 +35,8 @@ static const struct xm_event_descriptor g_events_desc[] = {
 
 static int state1_transition_cb(struct xm_object *self, bool enter)
 {
-        if (enter != false) {
+        if (enter != false)
                 xm_state_request(self, STATE_2);
-        }
         
         return 0;
 }
@@ -66,7 +65,6 @@ int main(int argc, char *argv[])
         (void)argv;
 
         xm_init(&g_fsm, &g_fsm_desc);
-        while (g_exit_flag == false) {
+        while (g_exit_flag == false)
                 xm_service(&g_fsm);
-        }
 }
