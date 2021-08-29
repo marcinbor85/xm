@@ -77,13 +77,15 @@ xm_status_t xm_state_transition(struct xm_object *self)
         xm_status_t ret = XM_STATUS_OK;
         struct xm_state_manager *mgr = &self->state;
         const struct xm_state_descriptor *current;
+        xm_state_id_t request_id = mgr->request_id;
         
         XM_ASSERT(self != NULL);
 
-        if (mgr->request_id < 0) {
+        if (request_id < 0) {
                 ret = XM_STATUS_ERROR_NO_PENDING_TRANSITION;
                 goto _xm_state_transition_return;
         }
+        mgr->request_id = XM_STATE_NO_STATE;
 
         current = mgr->current;
         if (current == NULL) {
@@ -91,7 +93,7 @@ xm_status_t xm_state_transition(struct xm_object *self)
                 goto _xm_state_transition_enter;
         }
 
-        if (current->id == mgr->request_id) {
+        if (current->id == request_id) {
                 XM_LOG_E("already active: <%s>", current->name);
                 ret = XM_STATUS_ERROR_STATE_ALREADY_ACTIVE;
                 goto _xm_state_transition_return;
@@ -104,14 +106,13 @@ xm_status_t xm_state_transition(struct xm_object *self)
 
 _xm_state_transition_enter:
 
-        mgr->current = &self->desc->states[mgr->request_id];
+        mgr->current = &self->desc->states[request_id];
         current = mgr->current;
         XM_LOG_I("enter: <%s>", current->name);
         if (current->transition_cb != NULL)
                 current->transition_cb(self, true);
 
 _xm_state_transition_return:
-        mgr->request_id = XM_STATE_NO_STATE;
         return ret;
 }
 
