@@ -70,7 +70,9 @@ static int state2_process_cb(struct xm_object *self)
         return 0;
 }
 
-static struct xm_event events_pool[8];
+#define EVENTS_POOL_SIZE        8
+
+static struct xm_event events_pool[EVENTS_POOL_SIZE];
 
 static const struct xm_object_descriptor g_fsm_desc = {
         .states = g_states_desc,
@@ -78,7 +80,7 @@ static const struct xm_object_descriptor g_fsm_desc = {
         .init_state_id = STATE_1,
         .name = "main",
         .events_pool = events_pool,
-        .events_pool_size = sizeof(events_pool) / sizeof(events_pool[0])
+        .events_pool_size = EVENTS_POOL_SIZE,
 };
 
 struct xm_object g_fsm;
