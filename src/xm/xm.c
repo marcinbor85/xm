@@ -52,6 +52,8 @@ _xm_init_return:
 
 xm_status_t xm_service(struct xm_object *self)
 {
+        XM_ASSERT(self != NULL);
+
         xm_status_t ret = XM_STATUS_ERROR_NOTHING_TO_DO;
 
         ret = xm_event_process(self);
@@ -66,6 +68,26 @@ xm_status_t xm_service(struct xm_object *self)
         if (ret == XM_STATUS_OK)
                 goto _xm_service_return;
 
+        ret = xm_state_finish(self);
+        if (ret == XM_STATUS_OK)
+                goto _xm_service_return;
+
 _xm_service_return:
         return ret;
+}
+
+xm_status_t xm_finish(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
+
+        self->state.finish_request = true;
+
+        return XM_STATUS_OK;
+}
+
+bool xm_is_finish(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
+
+        return ((self->state.current == NULL) && (self->state.finish_request != false)) ? true : false;
 }

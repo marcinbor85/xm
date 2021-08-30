@@ -43,6 +43,8 @@ struct xm_state_descriptor {
 struct xm_state_manager {
         xm_state_id_t request_id;
         xm_state_id_t max_num;
+
+        bool finish_request;
         
         struct xm_state_descriptor const *current;
 };

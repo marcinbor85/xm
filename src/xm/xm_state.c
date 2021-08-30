@@ -34,7 +34,8 @@ xm_status_t xm_state_manager_init(struct xm_object *self)
         XM_ASSERT(self->desc->states != NULL);
 
         mgr->current = NULL;
-        mgr->request_id = XM_STATE_NO_STATE;
+        mgr->request_id = XM_ID_NOT_USED;
+        mgr->finish_request = false;
         mgr->max_num = 0;
         while (self->desc->states[mgr->max_num].name != NULL)
                 mgr->max_num++;
@@ -85,11 +86,11 @@ xm_status_t xm_state_transition(struct xm_object *self)
                 ret = XM_STATUS_ERROR_NO_PENDING_TRANSITION;
                 goto _xm_state_transition_return;
         }
-        mgr->request_id = XM_STATE_NO_STATE;
+        mgr->request_id = XM_ID_NOT_USED;
 
         current = mgr->current;
         if (current == NULL) {
-                XM_LOG_I("initial state");
+                XM_LOG_I("init");
                 goto _xm_state_transition_enter;
         }
 
@@ -136,5 +137,36 @@ xm_status_t xm_state_process(struct xm_object *self)
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_process_return:
+        return ret;
+}
+
+xm_status_t xm_state_finish(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
+
+        xm_status_t ret = XM_STATUS_OK;
+        struct xm_state_manager *mgr = &self->state;
+
+        if (mgr->finish_request == false) {
+                ret = XM_STATUS_ERROR_NOTHING_TO_DO;
+                goto _xm_state_finish_return;
+        }
+
+        const struct xm_state_descriptor *current = mgr->current;
+        if (current == NULL) {
+                XM_LOG_E("already finished");
+                ret = XM_STATUS_ERROR_STATE_ALREADY_FINISHED;
+                goto _xm_state_finish_return;
+        }
+        XM_LOG_I("exit: <%s>", current->name);
+        int busy = 0;
+        if (current->transition_cb != NULL)
+                busy = current->transition_cb(self, false);
+        XM_LOG_I("finish");
+        mgr->current = NULL;
+        ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
+
+_xm_state_finish_return:
+        
         return ret;
 }
