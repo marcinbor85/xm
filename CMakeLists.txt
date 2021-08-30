@@ -13,5 +13,5 @@ set (CMAKE_C_FLAGS "-Werror -Wall -Wextra -pedantic -g -O0 --coverage" )
 set (CMAKE_EXE_LINKER_FLAGS "--coverage" )
 
 add_subdirectory( ${PROJECT_SOURCE_DIR}/src )
-# add_subdirectory( ${PROJECT_SOURCE_DIR}/tests )
+add_subdirectory( ${PROJECT_SOURCE_DIR}/tests )
 add_subdirectory( ${PROJECT_SOURCE_DIR}/examples )
