@@ -42,4 +42,6 @@ __attribute__((weak)) const char *log_level_name[] = {
 #define XM_CONFIG_MALLOC(n)                         malloc(n)
 #define XM_CONFIG_FREE(p)                           free(p)
 
+#define XM_CONFIG_FLAG_STATIC_ALLOCATION            0
+
 #endif /* XM_CONFIG_H */

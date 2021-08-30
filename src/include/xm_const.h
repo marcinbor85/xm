@@ -29,7 +29,8 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#define XM_STATE_NO_STATE       -1
+#define XM_ID_NOT_USED      -1
+#define XM_ID_FINISH        -2
 
 #ifdef __cplusplus
 }

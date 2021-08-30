@@ -33,6 +33,8 @@ extern "C" {
         #include "config/arduino/xm_config.h"
 #elif defined(XM_CONFIG_PLATFORM_POSIX)
         #include "config/posix/xm_config.h"
+#elif defined(XM_CONFIG_PLATFORM_POSIX_STATIC)
+        #include "config/posix_static/xm_config.h"
 #else
         #include "xm_config.h"
 #endif

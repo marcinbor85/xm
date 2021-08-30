@@ -29,7 +29,7 @@ SOFTWARE.
 
 #define XM_CONFIG_ASSERT(x)                         {}
 #define XM_CONFIG_LOG(self, level, fmt, ...)        {}
-#define XM_CONFIG_MALLOC(n)                         malloc(n)
-#define XM_CONFIG_FREE(p)                           free(p)
+
+#define XM_CONFIG_FLAG_STATIC_ALLOCATION            1
 
 #endif /* XM_CONFIG_H */

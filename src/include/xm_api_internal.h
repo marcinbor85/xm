@@ -29,16 +29,26 @@ SOFTWARE.
 extern "C" {
 #endif
 
+#include "xm_preconfig.h"
 #include "xm_assert.h"
 #include "xm_log.h"
 #include "xm_heap.h"
 
-xm_status_t xm_event_manager_init(struct xm_object *self);
-xm_status_t xm_event_process(struct xm_object *self);
 
-xm_status_t xm_state_manager_init(struct xm_object *self);
-xm_status_t xm_state_transition(struct xm_object *self);
-xm_status_t xm_state_process(struct xm_object *self);
+xm_status_t             xm_event_manager_init(struct xm_object *self);
+xm_status_t             xm_event_process(struct xm_object *self);
+struct xm_event*        xm_event_malloc(struct xm_object *self);
+void                    xm_event_free(struct xm_object *self, struct xm_event *event);
+
+#if XM_CONFIG_FLAG_STATIC_ALLOCATION == 1
+struct xm_event*        xm_event_malloc_from_pool(struct xm_object *self);
+void                    xm_event_free_from_pool(struct xm_object *self, struct xm_event *event);
+#endif
+
+xm_status_t             xm_state_manager_init(struct xm_object *self);
+xm_status_t             xm_state_transition(struct xm_object *self);
+xm_status_t             xm_state_finish(struct xm_object *self);
+xm_status_t             xm_state_process(struct xm_object *self);
 
 #ifdef __cplusplus
 }

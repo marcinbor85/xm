@@ -29,6 +29,7 @@ SOFTWARE.
 extern "C" {
 #endif
 
+#include "xm_preconfig.h"
 #include "xm_types.h"
 
 struct xm_event {
@@ -48,6 +49,10 @@ struct xm_event_manager {
         struct xm_event **last;
 
         xm_state_id_t max_num;
+
+#if XM_CONFIG_FLAG_STATIC_ALLOCATION == 1
+        size_t event_pool_index;
+#endif
 };
 
 #ifdef __cplusplus

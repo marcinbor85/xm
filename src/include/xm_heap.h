@@ -31,8 +31,12 @@ extern "C" {
 
 #include "xm_preconfig.h"
 
+#if XM_CONFIG_FLAG_STATIC_ALLOCATION == 0
+
 #define XM_MALLOC(n)    XM_CONFIG_MALLOC(n)
 #define XM_FREE(p)      XM_CONFIG_FREE(p)
+
+#endif
 
 #ifdef __cplusplus
 }
