@@ -28,8 +28,6 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdint.h>
 
-static bool g_exit_flag;
-
 typedef enum {
         STATE_1,
         STATE_2,
@@ -67,9 +65,7 @@ static int state1_transition_cb(struct xm_object *self, bool enter)
 
 static int state2_process_cb(struct xm_object *self)
 {
-        (void)self;
-
-        g_exit_flag = true;
+        xm_finish(self);
 
         return 0;
 }
@@ -89,6 +85,8 @@ int main(int argc, char *argv[])
         (void)argv;
 
         xm_init(&g_fsm, &g_fsm_desc);
-        while (g_exit_flag == false)
+        while (xm_is_finish(&g_fsm) == false)
                 xm_service(&g_fsm);
+
+        return 0;
 }
