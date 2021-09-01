@@ -55,6 +55,26 @@ _xm_init_return:
         return ret;
 }
 
+xm_status_t xm_deinit(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
+        
+        xm_mutex_lock(self);
+
+        struct xm_event_manager *mgr = &self->event;
+        struct xm_event *event = mgr->first;
+
+        while (event != NULL) {
+                struct xm_event *next = event->next;
+                xm_event_free(self, event);
+                event = next;
+        }
+
+        xm_mutex_unlock(self);
+
+        return XM_STATUS_OK;
+}
+
 xm_status_t xm_service(struct xm_object *self)
 {
         XM_ASSERT(self != NULL);
@@ -109,3 +129,29 @@ bool xm_is_finish(struct xm_object *self)
 
         return ret;
 }
+
+#if XM_CONFIG_FLAG_STATIC_ALLOCATION == 0
+
+struct xm_object* xm_new(const struct xm_object_descriptor *desc)
+{
+        XM_ASSERT(desc != NULL);
+        
+        struct xm_object* ret;
+
+        ret = XM_MALLOC(sizeof(struct xm_object));
+        if (ret != NULL)
+                (void)xm_init(ret, desc);
+
+        return ret;
+}
+
+void xm_delete(struct xm_object* self)
+{
+        XM_ASSERT(self != NULL);
+
+        xm_deinit(self);
+
+        XM_FREE(self);
+}
+
+#endif

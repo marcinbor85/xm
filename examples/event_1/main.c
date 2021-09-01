@@ -126,16 +126,15 @@ static const struct xm_object_descriptor g_fsm_desc = {
         .name = "main"
 };
 
-struct xm_object g_fsm;
-
 int main(int argc, char *argv[])
 {
         (void)argc;
         (void)argv;
 
-        xm_init(&g_fsm, &g_fsm_desc);
-        while (xm_is_finish(&g_fsm) == false)
-                xm_service(&g_fsm);
+        struct xm_object *fsm = xm_new(&g_fsm_desc);
+        while (xm_is_finish(fsm) == false)
+                xm_service(fsm);
+        xm_delete(fsm);
 
         return 0;
 }

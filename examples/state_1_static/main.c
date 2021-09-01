@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
         xm_init(&g_fsm, &g_fsm_desc);
         while (xm_is_finish(&g_fsm) == false)
                 xm_service(&g_fsm);
+        xm_deinit(&g_fsm);
 
         return 0;
 }

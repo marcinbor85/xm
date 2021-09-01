@@ -146,6 +146,14 @@ void xm_mutex_unlock(struct xm_object *self)
         ++xm_mutex_unlock_call_cntr;
 }
 
+void xm_event_free(struct xm_object *self, struct xm_event *event)
+{
+        // TODO
+
+        (void)self;
+        (void)event;
+}
+
 //////////////////////////
 
 void test_xm_init(void)

@@ -36,11 +36,15 @@ typedef int (*xm_state_transition_cb)(struct xm_object *self, bool enter);
 typedef int (*xm_state_process_cb)(struct xm_object *self);
 
 xm_status_t xm_init(struct xm_object *self, const struct xm_object_descriptor *desc);
+xm_status_t xm_deinit(struct xm_object *self);
 xm_status_t xm_service(struct xm_object *self);
 xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg);
 xm_status_t xm_state_request(struct xm_object *self, xm_state_id_t id);
 xm_status_t xm_finish(struct xm_object *self);
 bool        xm_is_finish(struct xm_object *self);
+
+struct xm_object*       xm_new(const struct xm_object_descriptor *desc);
+void                    xm_delete(struct xm_object* self);
 ```
 
 ## Usage
@@ -116,6 +120,7 @@ int main(int argc, char *argv[])
         xm_init(&g_fsm, &g_fsm_desc);
         while (xm_is_finish(&g_fsm) == false)
                 xm_service(&g_fsm);
+        xm_deinit(&g_fsm);
 
         return 0;
 }

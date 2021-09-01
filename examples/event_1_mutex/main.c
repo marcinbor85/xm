@@ -164,14 +164,14 @@ static const struct xm_object_descriptor g_fsm_desc = {
         .mutex_unlock = mutex_unlock,
 };
 
-struct xm_object g_fsm;
+struct xm_object *g_fsm;
 
 void* fsm_service_task(void *ptr)
 {
         (void)ptr;
 
-        while (xm_is_finish(&g_fsm) == false) {
-                xm_service(&g_fsm);
+        while (xm_is_finish(g_fsm) == false) {
+                xm_service(g_fsm);
         }
 
         return NULL;
@@ -181,8 +181,8 @@ void* event_producer(void *ptr)
 {
         events_t event_id = (events_t)ptr;
 
-        while (xm_is_finish(&g_fsm) == false) {
-                xm_event_trigger(&g_fsm, event_id, NULL);
+        while (xm_is_finish(g_fsm) == false) {
+                xm_event_trigger(g_fsm, event_id, NULL);
                 sleep(1);
         }
 
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
 
         pthread_t thread[3];
 
-        xm_init(&g_fsm, &g_fsm_desc);
+        g_fsm = xm_new(&g_fsm_desc);
 
         pthread_create(&thread[0], NULL, fsm_service_task, NULL);
         pthread_create(&thread[1], NULL, event_producer, (void*)EVENT_1);
@@ -205,6 +205,8 @@ int main(int argc, char *argv[])
         pthread_join(thread[0], NULL);
         pthread_join(thread[1], NULL); 
         pthread_join(thread[2], NULL); 
+
+        xm_delete(g_fsm);
 
         return 0;
 }
