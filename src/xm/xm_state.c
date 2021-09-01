@@ -190,3 +190,15 @@ xm_status_t xm_state_finish(struct xm_object *self)
 _xm_state_finish_return:
         return ret;
 }
+
+xm_state_id_t xm_state_get_current(struct xm_object *self)
+{
+        xm_state_id_t ret;
+        XM_ASSERT(self != NULL);
+
+        xm_mutex_lock(self);
+        ret = self->state.current->id;
+        xm_mutex_unlock(self);
+
+        return ret;
+}

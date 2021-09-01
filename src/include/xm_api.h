@@ -40,6 +40,7 @@ xm_status_t     xm_deinit(struct xm_object *self);
 xm_status_t     xm_service(struct xm_object *self);
 xm_status_t     xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg);
 xm_status_t     xm_state_request(struct xm_object *self, xm_state_id_t id);
+xm_state_id_t   xm_state_get_current(struct xm_object *self);
 xm_status_t     xm_finish(struct xm_object *self);
 bool            xm_is_finish(struct xm_object *self);
 
