@@ -31,5 +31,6 @@ SOFTWARE.
 #define XM_CONFIG_LOG(self, level, fmt, ...)        {}
 
 #define XM_CONFIG_FLAG_STATIC_ALLOCATION            1
+#define XM_CONFIG_FLAG_USE_MUTEX                    0
 
 #endif /* XM_CONFIG_H */

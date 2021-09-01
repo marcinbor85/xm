@@ -46,7 +46,9 @@ xm_status_t xm_state_manager_init(struct xm_object *self)
                 goto _xm_state_manager_init_return;
         }
 
+        xm_mutex_unlock(self);
         ret = xm_state_request(self, self->desc->init_state_id);
+        xm_mutex_lock(self);
 
 _xm_state_manager_init_return:
         return ret;
@@ -55,10 +57,13 @@ _xm_state_manager_init_return:
 xm_status_t xm_state_request(struct xm_object *self, xm_state_id_t id)
 {
         xm_status_t ret = XM_STATUS_OK;
-        struct xm_state_manager *mgr = &self->state;
 
         XM_ASSERT(self != NULL);
         XM_ASSERT(id >= 0);
+
+        xm_mutex_lock(self);
+
+        struct xm_state_manager *mgr = &self->state;
 
         if (id >= mgr->max_num) {
                 XM_LOG_E("unsupported state: %d", id);
@@ -70,17 +75,20 @@ xm_status_t xm_state_request(struct xm_object *self, xm_state_id_t id)
         XM_LOG_I("request state: <%s>", self->desc->states[mgr->request_id].name);
 
 _xm_state_request_return:
+
+        xm_mutex_unlock(self);
         return ret;
 }
 
 xm_status_t xm_state_transition(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
-        struct xm_state_manager *mgr = &self->state;
         const struct xm_state_descriptor *current;
-        xm_state_id_t request_id = mgr->request_id;
         
         XM_ASSERT(self != NULL);
+
+        struct xm_state_manager *mgr = &self->state;
+        xm_state_id_t request_id = mgr->request_id;
 
         if (request_id < 0) {
                 ret = XM_STATUS_ERROR_NO_PENDING_TRANSITION;
@@ -101,8 +109,11 @@ xm_status_t xm_state_transition(struct xm_object *self)
         }
         XM_LOG_I("exit: <%s>", current->name);
         int busy = 0;
-        if (current->transition_cb != NULL)
+        if (current->transition_cb != NULL) {
+                xm_mutex_unlock(self);
                 busy = current->transition_cb(self, false);
+                xm_mutex_lock(self);
+        }
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_transition_enter:
@@ -110,8 +121,11 @@ _xm_state_transition_enter:
         mgr->current = &self->desc->states[request_id];
         current = mgr->current;
         XM_LOG_I("enter: <%s>", current->name);
-        if (current->transition_cb != NULL)
+        if (current->transition_cb != NULL) {
+                xm_mutex_unlock(self);
                 current->transition_cb(self, true);
+                xm_mutex_lock(self);
+        }
 
 _xm_state_transition_return:
         return ret;
@@ -120,10 +134,11 @@ _xm_state_transition_return:
 xm_status_t xm_state_process(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
-        struct xm_state_manager *mgr = &self->state;
-        const struct xm_state_descriptor *current = mgr->current;
         
         XM_ASSERT(self != NULL);
+
+        struct xm_state_manager *mgr = &self->state;
+        const struct xm_state_descriptor *current = mgr->current;
 
         if (current == NULL) {
                 XM_LOG_E("no active state");
@@ -132,8 +147,11 @@ xm_status_t xm_state_process(struct xm_object *self)
         }
 
         int busy = 0;
-        if (current->process_cb != NULL)
+        if (current->process_cb != NULL) {
+                xm_mutex_unlock(self);
                 busy = current->process_cb(self);
+                xm_mutex_lock(self);
+        }
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_process_return:
@@ -142,9 +160,9 @@ _xm_state_process_return:
 
 xm_status_t xm_state_finish(struct xm_object *self)
 {
-        XM_ASSERT(self != NULL);
-
         xm_status_t ret = XM_STATUS_OK;
+
+        XM_ASSERT(self != NULL);
         struct xm_state_manager *mgr = &self->state;
 
         if (mgr->finish_request == false) {
@@ -160,13 +178,15 @@ xm_status_t xm_state_finish(struct xm_object *self)
         }
         XM_LOG_I("exit: <%s>", current->name);
         int busy = 0;
-        if (current->transition_cb != NULL)
+        if (current->transition_cb != NULL) {
+                xm_mutex_unlock(self);
                 busy = current->transition_cb(self, false);
+                xm_mutex_lock(self);
+        }
         XM_LOG_I("finish");
         mgr->current = NULL;
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
 
 _xm_state_finish_return:
-        
         return ret;
 }

@@ -9,6 +9,7 @@ Extremely fast Finite State Machine pure C implementation with events subsystem.
 * init and finish conditions
 * object oriented architecture
 * pure C source code
+* thread safe (optional mutex interface)
 * multi-platform architecture
 * nice design and internal architecture
 
@@ -20,8 +21,11 @@ Build, test and run examples:
 cmake -B build .
 cd build
 make
+make test
 ./bin/event_1
+./bin/event_1_mutex
 ./bin/state_1
+./bin/state_1_static
 ```
 
 ## API
@@ -115,4 +119,28 @@ int main(int argc, char *argv[])
 
         return 0;
 }
+```
+
+Example multithread flow:
+```sh
+xm: main: [I]: request state: <STATE_COUNT>
+xm: main: [I]: init
+xm: main: [I]: enter: <STATE_COUNT>
+xm: main: [I]: event triggered: [EVENT_1]
+xm: main: [I]: event processed: [EVENT_1]
+xm: main: [I]: event triggered: [EVENT_2]
+xm: main: [I]: event processed: [EVENT_2]
+xm: main: [I]: event triggered: [EVENT_1]
+xm: main: [I]: event processed: [EVENT_1]
+xm: main: [I]: event triggered: [EVENT_2]
+xm: main: [I]: event processed: [EVENT_2]
+xm: main: [I]: event triggered: [EVENT_1]
+xm: main: [I]: event processed: [EVENT_1]
+xm: main: [I]: request state: <STATE_FINAL>
+xm: main: [I]: exit: <STATE_COUNT>
+xm: main: [I]: enter: <STATE_FINAL>
+xm: main: [I]: event triggered: [EVENT_FINISH]
+xm: main: [I]: event processed: [EVENT_FINISH]
+xm: main: [I]: exit: <STATE_FINAL>
+xm: main: [I]: finish
 ```

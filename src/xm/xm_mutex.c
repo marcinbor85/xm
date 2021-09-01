@@ -22,25 +22,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef XM_CONFIG_H
-#define XM_CONFIG_H
+#include "xm_api.h"
+#include "xm_api_internal.h"
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
+void xm_mutex_lock(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
+        
+#if XM_CONFIG_FLAG_USE_MUTEX == 1
+        XM_ASSERT(self->desc->mutex_lock != NULL);
 
-#include "xm_log.h"
+        (void)self->desc->mutex_lock(self, NULL);
+#else
+        (void)self;
+#endif
+}
 
-__attribute__((weak)) const char *log_level_name[] = {
-    [XM_LOG_LEVEL_DEBUG] = "D",
-    [XM_LOG_LEVEL_INFO] = "I",
-    [XM_LOG_LEVEL_ERROR] = "E",
-};
+void xm_mutex_unlock(struct xm_object *self)
+{
+        XM_ASSERT(self != NULL);
 
-#define XM_CONFIG_ASSERT(x)                         assert(x)
-#define XM_CONFIG_LOG(self, level, fmt, ...)        printf("xm: %s: [%s]: " fmt "\n", self->desc->name, log_level_name[level], ##__VA_ARGS__)
+#if XM_CONFIG_FLAG_USE_MUTEX == 1
+        XM_ASSERT(self->desc->mutex_unlock != NULL);
 
-#define XM_CONFIG_FLAG_STATIC_ALLOCATION            1
-#define XM_CONFIG_FLAG_USE_MUTEX                    0
-
-#endif /* XM_CONFIG_H */
+        (void)self->desc->mutex_unlock(self, NULL);
+#else
+        (void)self;
+#endif
+}

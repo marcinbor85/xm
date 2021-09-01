@@ -107,10 +107,13 @@ void xm_event_free(struct xm_object *self, struct xm_event *event)
 xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg)
 {
         xm_status_t ret = XM_STATUS_OK;
-        struct xm_event_manager *mgr = &self->event;
 
         XM_ASSERT(self != NULL);
         XM_ASSERT(id >= 0);
+
+        xm_mutex_lock(self);
+
+        struct xm_event_manager *mgr = &self->event;
 
         if (id >= mgr->max_num) {
                 XM_LOG_E("unsupported event: %d", id);
@@ -138,16 +141,18 @@ xm_status_t xm_event_trigger(struct xm_object *self, xm_event_id_t id, void *arg
         XM_LOG_I("event triggered: [%s]", self->desc->events[id].name);
 
 _xm_event_trigger_return:
+
+        xm_mutex_unlock(self);
+
         return ret;
 }
 
 xm_status_t xm_event_process(struct xm_object *self)
 {
         xm_status_t ret = XM_STATUS_OK;
-        struct xm_event_manager *mgr = &self->event;
-
         XM_ASSERT(self != NULL);
 
+        struct xm_event_manager *mgr = &self->event;
         struct xm_event *event = mgr->first;
 
         if (event == NULL) {
@@ -165,7 +170,10 @@ xm_status_t xm_event_process(struct xm_object *self)
         if (state->event_cb == NULL)
                 goto _xm_event_process_end;
         
+        xm_mutex_unlock(self);
         int busy = state->event_cb(self, event->id, event->arg);
+        xm_mutex_lock(self);
+
         ret = (busy != 0) ? XM_STATUS_OK : XM_STATUS_ERROR_NOTHING_TO_DO;
         
 _xm_event_process_end:
@@ -177,5 +185,6 @@ _xm_event_process_end:
         xm_event_free(self, event);
 
 _xm_event_process_return:
+
         return ret;
 }

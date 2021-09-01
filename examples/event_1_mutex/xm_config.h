@@ -39,8 +39,10 @@ __attribute__((weak)) const char *log_level_name[] = {
 
 #define XM_CONFIG_ASSERT(x)                         assert(x)
 #define XM_CONFIG_LOG(self, level, fmt, ...)        printf("xm: %s: [%s]: " fmt "\n", self->desc->name, log_level_name[level], ##__VA_ARGS__)
+#define XM_CONFIG_MALLOC(n)                         malloc(n)
+#define XM_CONFIG_FREE(p)                           free(p)
 
-#define XM_CONFIG_FLAG_STATIC_ALLOCATION            1
-#define XM_CONFIG_FLAG_USE_MUTEX                    0
+#define XM_CONFIG_FLAG_STATIC_ALLOCATION            0
+#define XM_CONFIG_FLAG_USE_MUTEX                    1
 
 #endif /* XM_CONFIG_H */

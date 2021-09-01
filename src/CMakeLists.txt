@@ -4,6 +4,7 @@ file(
     ${CMAKE_CURRENT_SOURCE_DIR}/xm/xm.c
     ${CMAKE_CURRENT_SOURCE_DIR}/xm/xm_event.c
     ${CMAKE_CURRENT_SOURCE_DIR}/xm/xm_state.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/xm/xm_mutex.c
 )
 
 set(

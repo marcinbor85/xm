@@ -34,7 +34,6 @@ extern "C" {
 #include "xm_log.h"
 #include "xm_heap.h"
 
-
 xm_status_t             xm_event_manager_init(struct xm_object *self);
 xm_status_t             xm_event_process(struct xm_object *self);
 struct xm_event*        xm_event_malloc(struct xm_object *self);
@@ -49,6 +48,9 @@ xm_status_t             xm_state_manager_init(struct xm_object *self);
 xm_status_t             xm_state_transition(struct xm_object *self);
 xm_status_t             xm_state_finish(struct xm_object *self);
 xm_status_t             xm_state_process(struct xm_object *self);
+
+void                    xm_mutex_lock(struct xm_object *self);
+void                    xm_mutex_unlock(struct xm_object *self);
 
 #ifdef __cplusplus
 }

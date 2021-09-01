@@ -48,6 +48,9 @@ xm_status_t xm_state_transition_return;
 xm_status_t xm_state_process_return;
 xm_status_t xm_state_finish_return;
 
+int xm_mutex_lock_call_cntr;
+int xm_mutex_unlock_call_cntr;
+
 void setUp(void)
 {
         g_assert_call_count = 0;
@@ -69,6 +72,9 @@ void setUp(void)
         xm_state_transition_return = XM_STATUS_OK;
         xm_state_process_return = XM_STATUS_OK;
         xm_state_finish_return = XM_STATUS_OK;
+
+        xm_mutex_lock_call_cntr = 0;
+        xm_mutex_unlock_call_cntr = 0;
 }
 
 void tearDown(void)
@@ -128,6 +134,18 @@ xm_status_t xm_state_finish(struct xm_object *self)
         return xm_state_finish_return;
 }
 
+void xm_mutex_lock(struct xm_object *self)
+{
+        TEST_ASSERT_EQUAL(&g_self, self);
+        ++xm_mutex_lock_call_cntr;
+}
+
+void xm_mutex_unlock(struct xm_object *self)
+{
+        TEST_ASSERT_EQUAL(&g_self, self);
+        ++xm_mutex_unlock_call_cntr;
+}
+
 //////////////////////////
 
 void test_xm_init(void)
@@ -146,6 +164,8 @@ void test_xm_init(void)
         TEST_ASSERT_EQUAL(XM_STATUS_OK, xm_state_transition_return);
         TEST_ASSERT_EQUAL(XM_STATUS_OK, xm_state_process_return);
         TEST_ASSERT_EQUAL(XM_STATUS_OK, xm_state_finish_return);
+        TEST_ASSERT_EQUAL(1, xm_mutex_lock_call_cntr);
+        TEST_ASSERT_EQUAL(1, xm_mutex_unlock_call_cntr);
 }
 
 int main(int argc, char *argv[])

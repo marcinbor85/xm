@@ -33,7 +33,9 @@ xm_status_t xm_init(struct xm_object *self, const struct xm_object_descriptor *d
         XM_ASSERT(desc != NULL);
 
         self->desc = desc;
-        
+
+        xm_mutex_lock(self);
+
         ret = xm_event_manager_init(self);
         if (ret != XM_STATUS_OK) {
                 XM_LOG_E("xm_event_manager_init error");
@@ -47,6 +49,9 @@ xm_status_t xm_init(struct xm_object *self, const struct xm_object_descriptor *d
         }
 
 _xm_init_return:
+
+        xm_mutex_unlock(self);
+
         return ret;
 }
 
@@ -55,6 +60,8 @@ xm_status_t xm_service(struct xm_object *self)
         XM_ASSERT(self != NULL);
 
         xm_status_t ret = XM_STATUS_ERROR_NOTHING_TO_DO;
+
+        xm_mutex_lock(self);
 
         ret = xm_event_process(self);
         if (ret == XM_STATUS_OK)
@@ -73,6 +80,9 @@ xm_status_t xm_service(struct xm_object *self)
                 goto _xm_service_return;
 
 _xm_service_return:
+
+        xm_mutex_unlock(self);
+
         return ret;
 }
 
@@ -80,14 +90,22 @@ xm_status_t xm_finish(struct xm_object *self)
 {
         XM_ASSERT(self != NULL);
 
+        xm_mutex_lock(self);
         self->state.finish_request = true;
+        xm_mutex_unlock(self);
 
         return XM_STATUS_OK;
 }
 
 bool xm_is_finish(struct xm_object *self)
 {
+        bool ret;
+
         XM_ASSERT(self != NULL);
 
-        return ((self->state.current == NULL) && (self->state.finish_request != false)) ? true : false;
+        xm_mutex_lock(self);
+        ret = ((self->state.current == NULL) && (self->state.finish_request != false)) ? true : false;
+        xm_mutex_unlock(self);
+
+        return ret;
 }

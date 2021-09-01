@@ -46,6 +46,12 @@ struct xm_object_descriptor {
         struct xm_event *events_pool;
         size_t events_pool_size;
 #endif
+
+#if XM_CONFIG_FLAG_USE_MUTEX == 1
+        void *mutex;
+        xm_callable_iface mutex_lock;
+        xm_callable_iface mutex_unlock;
+#endif
 };
 
 struct xm_object {
