@@ -7,11 +7,13 @@ Extremely fast Finite State Machine pure C implementation with events subsystem.
 * static states and events descriptors
 * state transitions, events and process callbacks
 * init and finish conditions
+* no external dependencies
 * object oriented architecture
-* pure C source code
 * thread safe (optional mutex interface)
+* dedicated for embedded systems
 * multi-platform architecture
 * nice design and internal architecture
+* pure C source code
 
 ## Build
 
